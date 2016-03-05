@@ -64,26 +64,29 @@ module MasterRecord
       end
     end
 
-      if condition == nil 
-        if @master_records.count == 0
-          return nil
-        else
-          return new(@master_records.keys.first)  
-        end
-      end
-    def c.find_by(condition=nil)
-      if condition.is_a? Hash
-        filtered = @master_records.detect do |id,rec|
-          break new(id) if coincide?(id,rec,condition)
-        end
+    def c.find(condition)
+      if condition.is_a? Array
+        condition.map { |id| access(id.to_s) }.compact
       else
-        id = condition.to_s
-        if @master_records[id]
-          new(id)
-        else
-          nil
-        end
+        access(condition.to_s)
       end
+    end
+
+    def c.access(id)
+      @master_records[id] ? new(id) : nil
+    end
+
+    def c.find_by(condition=nil)
+      return @master_records.count == 0 ? nil : new(@master_records.keys.first) unless condition
+      @master_records.detect do |id,rec|
+        break new(id) if coincide?(id,rec,condition)
+      end
+    end
+
+    def c.where(condition)
+      @master_records.select do |id,rec|
+        coincide?(id,rec,condition)
+      end.map{|k,v| new(k)}
     end
 
     def c.coincide?(id,rec,condition)
@@ -94,18 +97,6 @@ module MasterRecord
           break nil if rec[k.to_sym] != v
         end
       end != nil
-    end
-
-    def c.find(condition=nil)
-      return all unless condition
-      if condition.is_a? Hash
-        filtered = @master_records.select do |id,rec|
-          coincide?(id,rec,condition)
-        end
-        filtered.map{|k,v| new(k)}
-      else
-        find_by(condition)
-      end
     end
   end
 end
