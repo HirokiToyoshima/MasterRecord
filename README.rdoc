@@ -32,22 +32,30 @@
     #4,けん,40
     # MasterRecord::CSV.load_file(file_path,header exists)
     User.load_data(MasterRecord::CSV.load_file(File.expand_path("./data/user.csv", File.dirname(__FILE__)),true))
-    User.find().count => 4
+    User.all.count => 4
     User.find("1").name => "ひろし"
-    User.find_by_name("ひろし")[0].age => 10
-    User.find(:name => "たけし",:age => 21) => []
-    User.find(:name => "たけし",:age => 20).count => 1
-    User.find_one(:name => "たけし",:age => 20).id => "2"
+    User.find(["3","4"]).map(&:attributes) => [
+      {:id => "3", :identity => "User@3", :name => "まこと", :age => 30},
+      {:id => "4", :identity => "User@4", :name => "けん", :age => 40}
+    ]
+    User.find_by(:name => "ひろし").age => 10
+    User.find_by(:name => "たけし",:age => 20).id => "2"
+    User.where(:name => "たけし",:age => 21) => []
+    User.where(:name => "たけし",:age => 20).count => 1
+    User.find_by.id  => "1"
 
     #1	あめ	30
     #2	チョコレート	40
     #3	ガム	50
     # MasterRecord::TSV.load_file(file_path,header exists)
     Item.load_data(MasterRecord::TSV.load_file(File.expand_path("./data/item.tsv", File.dirname(__FILE__))))
-    Item.find().count => 3
-    Item.find_by_price(50)[0].name => "ガム"
-    Item.find_one_by_price(50)[:id] => "3"
-    Item.find_one_by_price(40).attributes => {:id => "2",:identity => "Item@2",:name => "チョコレート",:price => 40}
+    Item.all.count => 3
+    Item.find(["2", "4"]).map(&:attributes) => [
+      {:id => "2",:identity => "Item@2",:name => "チョコレート",:price => 40}
+    ]
+    Item.find_by(:price => 50)["name"] => "ガム"
+    Item.find_by(:price => 50)[:id] => "3"
+    Item.find_by(:price => 40).attributes => {:id => "2",:identity => "Item@2",:name => "チョコレート",:price => 40}
 
     #1:
     #  name: "Japan"
@@ -60,9 +68,9 @@
     # MasterRecord::YAML.load_file(field_map,file_path)
     Country.load_data(
       MasterRecord::YAML.load_file(Country.fields,File.expand_path("../data/country.yml", File.dirname(__FILE__))))
-    Country.find().count => 2
-    Country.find_one_by_population(500000000).name => "China"
-    Country.find().map(&:salutation) => ["こんにちは!!","您好!!"]}
+    Country.all.count => 2
+    Country.find_by(:population => 500000000).name => "China"
+    Country.all.map(&:salutation) => ["こんにちは!!","您好!!"]}
     Country.find("1").now.call.to_s => "2011-12-18 01:01:00 +0900"
     Country.find("2").now.call.to_s => "2011-12-18 00:01:00 +0800"
 
