@@ -39,14 +39,7 @@ module MasterRecord
 
     fields.keys.each do |f|
       define_method(f) { @info.send(:fetch, f) }
-      c.define_singleton_method("find_by_#{f}".to_sym)do|target| 
-        @master_records.select{|k,v| v[f] == target}.map{|k,v|c.new(k)}
-      end
-      c.define_singleton_method("find_one_by_#{f}".to_sym)do|target| 
-        @master_records.detect{|k,v| break c.new(k) if v[f] == target}
-      end
     end
-
 
     def initialize(id)
       @id = id.to_s
