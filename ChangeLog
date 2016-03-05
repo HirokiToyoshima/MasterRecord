@@ -5,3 +5,6 @@
 0.3.2
 * modify bug when use find_one with no condition
 * no raise error when find ,find_one with no record define.
+
+0.3.3
+* update code-style for rails4 and rspec3

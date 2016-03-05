@@ -34,13 +34,19 @@ describe "Masterrecord" do
       #4,けん,40
       User.load_data(MasterRecord::CSV.load_file(File.expand_path("../data/user.csv", File.dirname(__FILE__)),true))
     end
-    it{ User.find().count.should == 4}
-    it{ User.find("1").name.should == "ひろし"}
-    it{ User.find_by_name("ひろし")[0].age.should == 10}
-    it{ User.find(:name => "たけし",:age => 21).should == []}
-    it{ User.find(:name => "たけし",:age => 20).count.should == 1}
-    it{ User.find_one(:name => "たけし",:age => 20).id.should == "2"}
-    it{ User.find_one().id.should == "1"}
+    it{ expect(User.all.count).to eq(4) }
+    it{ expect(User.find("1").name).to eq("ひろし") }
+    it do
+      expect(User.find(["3","4"]).map(&:attributes)).to eq([
+        {:id => "3", :identity => "User@3", :name => "まこと", :age => 30},
+        {:id => "4", :identity => "User@4", :name => "けん", :age => 40}
+      ])
+    end
+    it{ expect(User.where(:name => "たけし",:age => 21)).to eq([]) }
+    it{ expect(User.where(:name => "たけし",:age => 20).count).to eq(1) }
+    it{ expect(User.find_by(:name => "ひろし").age).to eq(10) }
+    it{ expect(User.find_by(:name => "たけし",:age => 20).id).to eq("2") }
+    it{ expect(User.find_by.id).to eq("1") }
   end
   describe "tsv" do
     before do
@@ -49,10 +55,15 @@ describe "Masterrecord" do
       #3	ガム	50
       Item.load_data(MasterRecord::TSV.load_file(File.expand_path("../data/item.tsv", File.dirname(__FILE__))))
     end
-    it{ Item.find().count.should == 3}
-    it{ Item.find_by_price(50)[0]["name"].should == "ガム"}
-    it{ Item.find_one_by_price(50)[:id].should == "3"}
-    it{ Item.find_one_by_price(40).attributes.should == {:id => "2",:identity => "Item@2",:name => "チョコレート",:price => 40}}
+    it{ expect(Item.all.count).to eq(3) }
+    it do
+      expect(Item.find(["2", "4"]).map(&:attributes)).to eq([
+        {:id => "2",:identity => "Item@2",:name => "チョコレート",:price => 40}
+      ])
+    end
+    it{ expect(Item.find_by(:price => 50)["name"]).to eq("ガム") }
+    it{ expect(Item.find_by(:price => 50)[:id]).to eq("3") }
+    it{ expect(Item.find_by(:price => 40).attributes).to eq({:id => "2",:identity => "Item@2",:name => "チョコレート",:price => 40}) }
   end
   describe "yml" do
     before do
@@ -69,11 +80,12 @@ describe "Masterrecord" do
       Country.load_data(
         MasterRecord::YAML.load_file(Country.fields,File.expand_path("../data/country.yml", File.dirname(__FILE__))))
       @now = Time.new(2011,12,18,1,1,0)
-      Time.stub!(:now).and_return(@now)
+      allow(Time).to receive(:now).and_return(@now)
     end
-    it{ Country.find().count.should == 2}
-    it{ Country.find().map(&:salutation).should == ["こんにちは!!","您好!!"]}
-    it{ Country.find("1").now.call.to_s.should == "2011-12-18 01:01:00 +0900"}
-    it{ Country.find("2").now.call.to_s.should == "2011-12-18 00:01:00 +0800"}
+    it{ expect(Country.all.count).to eq(2) }
+    it{ expect(Country.find_by(:population => 500000000).name).to eq("China") }
+    it{ expect(Country.all.map(&:salutation)).to eq(["こんにちは!!","您好!!"]) }
+    it{ expect(Country.find("1").now.call.to_s).to eq("2011-12-18 01:01:00 +0900") }
+    it{ expect(Country.find("2").now.call.to_s).to eq("2011-12-18 00:01:00 +0800") }
   end
 end
