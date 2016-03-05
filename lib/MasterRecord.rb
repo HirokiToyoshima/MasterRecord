@@ -64,7 +64,6 @@ module MasterRecord
       end
     end
 
-    def c.find_one(condition=nil)
       if condition == nil 
         if @master_records.count == 0
           return nil
@@ -72,6 +71,7 @@ module MasterRecord
           return new(@master_records.keys.first)  
         end
       end
+    def c.find_by(condition=nil)
       if condition.is_a? Hash
         filtered = @master_records.detect do |id,rec|
           break new(id) if coincide?(id,rec,condition)
@@ -104,7 +104,7 @@ module MasterRecord
         end
         filtered.map{|k,v| new(k)}
       else
-        find_one(condition)
+        find_by(condition)
       end
     end
   end
