@@ -28,6 +28,9 @@ module MasterRecord
       self.instance_variable_set("@master_records",master_records)
     end
 
+    # Auto load TSV-File by class_name
+    c.load_data(TSV.load_file(ENV["TSV_ROOT_DIR"] + c.to_s.tableize + ".tsv", true)) if ENV["TSV_ROOT_DIR"]
+
     data_exist =  Class.const_defined?("#{c}Data".to_sym)
 
     if data_exist
