@@ -88,4 +88,12 @@ describe "Masterrecord" do
     it{ expect(Country.find("1").now.call.to_s).to eq("2011-12-18 01:01:00 +0900") }
     it{ expect(Country.find("2").now.call.to_s).to eq("2011-12-18 00:01:00 +0800") }
   end
+
+  describe "expired_at" do
+    before do
+      Item.load_data(MasterRecord::TSV.load_file(File.expand_path("../data/item.tsv", File.dirname(__FILE__))))
+    end
+
+    it { expect(Item.expired_at).to eq((Time.current + Item.cache_seconds).strftime("%Y/%m/%d %H:%M:%S")) }
+  end
 end

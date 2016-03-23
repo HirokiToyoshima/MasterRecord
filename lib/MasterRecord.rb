@@ -3,6 +3,8 @@ require 'master_record/factory'
 require 'master_record/csv'
 require 'master_record/tsv'
 require 'master_record/yaml'
+require 'active_support'
+require 'active_support/core_ext'
 module MasterRecord
   def self.included(c)
     fields = c.const_get("#{c}Fields")
@@ -108,7 +110,7 @@ module MasterRecord
     end
 
     def c.expired_at
-      @data_timestamp.to_time.strftime "%Y/%m/%d %H:%M:%S"
+      Time.at(@data_timestamp + self.cache_seconds).strftime "%Y/%m/%d %H:%M:%S"
     end
 
     def c.coincide?(id,rec,condition)
