@@ -107,6 +107,10 @@ module MasterRecord
       600
     end
 
+    def c.expired_at
+      @data_timestamp.to_time.strftime "%Y/%m/%d %H:%M:%S"
+    end
+
     def c.coincide?(id,rec,condition)
       condition.each do|k,v| 
         if k.to_s == "id" 
