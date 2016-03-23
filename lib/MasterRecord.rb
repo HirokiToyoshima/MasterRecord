@@ -22,10 +22,14 @@ module MasterRecord
     end
 
     def c.reload
+      @data_timestamp = Time.current.to_i
       klass = Object.const_get("#{self}Data")
       master_records = klass.const_get("#{self}Records")
       self.instance_variable_set("@master_records",master_records)
     end
+
+    # Auto load TSV-File by class_name
+    c.load_data(TSV.load_file(ENV["TSV_ROOT_DIR"] + c.to_s.tableize + ".tsv", true)) if ENV["TSV_ROOT_DIR"]
 
     data_exist =  Class.const_defined?("#{c}Data".to_sym)
 
@@ -59,12 +63,14 @@ module MasterRecord
     attr_reader :identity, :id
 
     def c.all
+      self.check_ttl
       @master_records.keys.map do |id|
         self.new(id)
       end
     end
 
     def c.find(condition)
+      self.check_ttl
       if condition.is_a? Array
         condition.map { |id| access(id.to_s) }.compact
       else
@@ -77,6 +83,7 @@ module MasterRecord
     end
 
     def c.find_by(condition=nil)
+      self.check_ttl
       return @master_records.count == 0 ? nil : new(@master_records.keys.first) unless condition
       @master_records.detect do |id,rec|
         break new(id) if coincide?(id,rec,condition)
@@ -84,9 +91,20 @@ module MasterRecord
     end
 
     def c.where(condition)
+      self.check_ttl
       @master_records.select do |id,rec|
         coincide?(id,rec,condition)
       end.map{|k,v| new(k)}
+    end
+
+    # TimeToLiveを確認して期間を過ぎていたらデータを再読み込みさせる
+    def c.check_ttl
+      self.reload if Time.current.to_i > (@data_timestamp || 0) + self.cache_seconds
+    end
+
+    # TODO: キャッシュ期間を外部で管理できるようにする
+    def c.cache_seconds
+      600
     end
 
     def c.coincide?(id,rec,condition)
