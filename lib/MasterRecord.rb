@@ -31,7 +31,7 @@ module MasterRecord
     end
 
     # Auto load TSV-File by class_name
-    c.load_data(TSV.load_file(ENV["TSV_ROOT_DIR"] + c.to_s.tableize + ".tsv", true)) if ENV["TSV_ROOT_DIR"]
+    c.load_data(TSV.load_file(Pathname(ENV["TSV_ROOT_DIR"], c.to_s.tableize + ".tsv"), true)) if ENV["TSV_ROOT_DIR"]
 
     data_exist =  Class.const_defined?("#{c}Data".to_sym)
 
@@ -104,9 +104,8 @@ module MasterRecord
       self.reload if Time.current.to_i > (@data_timestamp || 0) + self.cache_seconds
     end
 
-    # TODO: キャッシュ期間を外部で管理できるようにする
     def c.cache_seconds
-      600
+      ENV["TSV_TTL_SECONDS"] ? ENV["TSV_TTL_SECONDS"].to_i : 600
     end
 
     def c.expired_at
